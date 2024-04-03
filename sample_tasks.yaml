@@ -1,0 +1,24 @@
+# ACI playbook - Sample - Tasks
+---
+- name: Couple of ACI Tasks
+  hosts: aci
+  connection: local
+  gather_facts: no
+
+  vars:
+    aci_login: &aci_login
+      host: "{{ ansible_host }}"
+      username: "{{ aci_username }}"
+      password: "{{ aci_password }}"
+      validate_certs: "{{ aci_validate_certs }}"
+      annotation: "orchestrator:ansible"
+
+  vars_files:
+    - dev_tn_variables.yaml
+
+  tasks:
+    - name: Add Development Tenant
+      aci_tenant:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        state: present
