@@ -15,7 +15,7 @@
       annotation: "orchestrator:ansible"
 
   vars_files:
-    - ../dev_tn_variables.yaml
+    - dev_tn_variables.yaml
 
   tasks:
     - name: Add Development Tenant
