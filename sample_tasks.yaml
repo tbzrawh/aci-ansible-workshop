@@ -11,7 +11,6 @@
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
       validate_certs: "{{ aci_validate_certs }}"
-      annotation: "orchestrator:ansible"
 
   vars_files:
     - dev_tn_variables.yaml
@@ -45,6 +44,8 @@
         contract_type: "{{ item.1.type }}"
         state: present
       loop: "{{ epgs | subelements('contracts') }}"
+      loop_control:
+        pause: 1
 
     - name: Add contracts
       aci_contract:
