@@ -17,8 +17,62 @@
     - dev_tn_variables.yaml
 
   tasks:
-    - name: Add Development Tenant
-      aci_tenant:
+    - name: Add Application Profile
+      aci_ap:
         <<: *aci_login
         tenant: "{{ tenant_name }}"
+        ap: "{{ app_name }}"
         state: present
+
+    - name: Add EPG
+      aci_epg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: "{{ app_name }}"
+        epg: "{{ item.name }}"
+        bd: "{{ item.bd }}"
+        preferred_group: "{{ item.prefGroup }}"
+        state: present
+      loop: "{{ epgs }}"
+
+    - name: Add contracts for app demo
+      aci_epg_to_contract:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: "{{ app_name }}"
+        epg: "{{ item.0.name }}"
+        contract: "{{ item.1.contract }}"
+        contract_type: "{{ item.1.type }}"
+        state: present
+      loop: "{{ epgs | subelements('contracts') }}"
+
+    - name: Add contracts
+      aci_contract:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        contract: "{{ item.name }}"
+        description: "{{ item.descr }}"
+        scope: "{{ item.scope }}"
+        state: present
+      loop: "{{ contracts }}"
+
+    - name: Add contract subjects
+      aci_contract_subject:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        contract: "{{ item.name }}"
+        subject: "{{ item.subject }}"
+        reverse_filter: "{{ item.reverse_filter }}"
+        state: present
+      loop: "{{ contracts }}"
+
+    - name: Bind filters to contract subjects
+      aci_contract_subject_to_filter:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        contract: "{{ item.0.name }}"
+        subject: "{{ item.0.subject }}"
+        filter: "{{ item.1 }}"
+        log: log
+        state: present
+      loop: "{{ contracts | subelements('filters') }}"
