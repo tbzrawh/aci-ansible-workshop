@@ -77,3 +77,35 @@
         log: log
         state: present
       loop: "{{ contracts | subelements('filters') }}"
+
+    - name: Add Physical Domain to EPG
+      aci_epg_to_domain:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: "{{ app_name }}"
+        epg: "{{ item.name }}"
+        domain: "UCS_Chassis"
+        domain_type: phys
+        state: present
+      loop: "{{ epgs }}"
+      loop_control:
+        pause: 2
+        
+    - name: Add Port to EPG
+      aci_static_binding_to_epg:
+        <<: *aci_login
+        tenant: "{{ tenant_name }}"
+        ap: "{{ app_name }}"
+        epg: "{{ item.name }}"
+        encap_id: 222
+        deploy_immediacy: lazy
+        interface_mode: untagged
+        interface_type: switch_port
+        pod_id: 1
+        leafs: 101
+        interface: '1/7'
+        state: present
+      loop: "{{ epgs }}"
+      loop_control:
+        pause: 2
+
