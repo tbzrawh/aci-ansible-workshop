@@ -12,6 +12,7 @@
       username: "{{ aci_username }}"
       password: "{{ aci_password }}"
       validate_certs: "{{ aci_validate_certs }}"
+      use_ssl: True
       annotation: "orchestrator:ansible"
 
   vars_files:
