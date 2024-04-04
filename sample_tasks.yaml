@@ -109,3 +109,15 @@
       loop_control:
         pause: 2
 
+    - name: Configure Port
+      cisco.aci.aci_interface_config:
+        <<: *aci_login
+        role: leaf
+        port_type: access
+        interface_type: pc_or_vpc
+        policy_group: ucs
+        node: 101
+        interface: "1/20"
+        state: present
+
+
