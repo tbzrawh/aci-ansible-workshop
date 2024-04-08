@@ -1,0 +1,69 @@
+# ACI playbook - Create Ansible Cert based User
+---
+- name: Create Ansible Cert based User
+  hosts: aci
+  connection: local
+  gather_facts: no
+
+  vars_prompt:
+    - name: password
+      prompt: password
+
+  vars:
+    aci_login: &aci_login
+      host: "{{ ansible_host }}"
+      username: "{{ aci_username }}"
+      use_ssl: True
+      validate_certs: "{{ aci_validate_certs }}"
+
+  vars_files:
+    - dev_tn_variables.yaml
+
+  tasks:
+    - name: Create Ansible User
+      aci_aaa_user:
+        <<: *aci_login
+        password: "{{ password }}"
+        aaa_user: ansible
+        aaa_password: dCloudDemo
+        expiration: never
+        expires: false
+        email: ansible@pseudocorp
+        phone: 0000-0000
+        first_name: Ansible
+        last_name: User
+        state: present
+        
+    - name: Upload Cert
+      aci_aaa_user_certificate:
+        <<: *aci_login
+        password: "{{ password }}"
+        aaa_user: ansible
+        name: ansible
+        certificate_data: "{{ lookup('file', 'admin.crt') }}"
+        state: present
+
+    - name: Add admin privileges to allow Ansible user to make changes
+      aci_rest:
+        <<: *aci_login
+        password: "{{ password }}"
+        path: /api/node/mo/uni/userext/user-ansible/userdomain-all.json
+        method: post
+        content:
+          {"aaaUserDomain":
+            {"attributes":{
+              "name":"all",
+              "rn":"userdomain-all",
+              },
+              "children":[
+                {"aaaUserRole":
+                  {"attributes":{
+                    "name":"admin","privType":"writePriv",
+                    "rn":"role-admin",
+                    },
+                    "children":[]
+                  }
+                }
+                ]
+            }
+          }
